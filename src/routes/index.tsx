@@ -221,7 +221,7 @@ function SurveyPage() {
   );
 
   await fetch(
-    "https://docs.google.com/forms/d/e/1FAIpQLSfAH9UGM120Hf99Xv32j9KxasdbUBc-6B4qxXRpwTJ76bE67Q/formResponse",
+    "https://docs.google.com/forms/d/e/1FAIpQLScaIvmrcx0G3ZmHcjYFAnrpU7RzjKzFcjstTn3U_HdIZzm1cg/formResponse",
     {
       method: "POST",
       mode: "no-cors",
