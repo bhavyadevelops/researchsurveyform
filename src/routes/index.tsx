@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import immersive1 from "@/assets/immersive-1.png.asset.json";
+import immersive2 from "@/assets/immersive-2.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: SurveyPage,
@@ -7,24 +9,13 @@ export const Route = createFileRoute("/")({
 
 // ---------- Survey model ----------
 
-type Option = {
-  label: string;
-  value: string;
-};
-
 type Question =
-  | {
-      id: string;
-      type: "radio";
-      label: string;
-      help?: string;
-      options: Option[];
-    }
-  | { id: string; type: "checkbox"; label: string; help?: string; options: Option[]; max?: number }
-  | { id: string; type: "select"; label: string; help?: string; options: Option[] }
-  | { id: string; type: "rating"; label: string; help?: string; scale?: number; leftLabel?: string; rightLabel?: string }
-  | { id: string; type: "text"; label: string; help?: string; placeholder?: string }
-  | { id: string; type: "textarea"; label: string; help?: string; placeholder?: string };
+  | { id: string; type: "radio"; label: string; help?: string; options: string[]; optional?: boolean; allowOther?: boolean }
+  | { id: string; type: "checkbox"; label: string; help?: string; options: string[]; max?: number; optional?: boolean; allowOther?: boolean }
+  | { id: string; type: "select"; label: string; help?: string; options: string[]; optional?: boolean }
+  | { id: string; type: "rating"; label: string; help?: string; scale?: number; leftLabel?: string; rightLabel?: string; optional?: boolean }
+  | { id: string; type: "text"; label: string; help?: string; placeholder?: string; optional?: boolean }
+  | { id: string; type: "textarea"; label: string; help?: string; placeholder?: string; optional?: boolean };
 
 type Section = {
   id: string;
@@ -32,9 +23,12 @@ type Section = {
   kicker: string;
   emoji: string;
   accent: "grape" | "tangerine" | "lime" | "sky" | "rose";
+  showImagineImages?: boolean;
   questions: Question[];
 };
 
+// Google Form entry IDs are used as question IDs so the form can be wired
+// to the existing Google Form later without renaming anything.
 const SECTIONS: Section[] = [
   {
     id: "about-you",
@@ -43,76 +37,310 @@ const SECTIONS: Section[] = [
     emoji: "🎟️",
     accent: "grape",
     questions: [
-      { id: "age", type: "radio", label: "Which age group do you belong to?", options: [{ label: "Under 18", value: "Under 18" }, { label: "18 – 24", value: "18 – 24" }, { label: "25 – 34", value: "25 – 34" }, { label: "35 – 44", value: "35 – 44" }, { label: "45 – 54", value: "45 – 54" }, { label: "55+", value: "55+" }] },
-      { id: "life_stage", type: "radio", label: "How would you describe your current life stage?", options: [{ label: "Student", value: "Student" }, { label: "Young professional", value: "Young professional" }, { label: "Couple / Partnered", value: "Couple / Partnered" }, { label: "Parent with kids", value: "Parent with kids" }, { label: "Empty nester", value: "Empty nester" }] },
-      { id: "city", type: "text", label: "Which city do you mostly hang out in?", placeholder: "e.g. Bengaluru, Mumbai, Delhi…" },
-      { id: "companions", type: "checkbox", label: "Who do you usually go out with?", help: "Pick all that apply", options: [{ label: "Solo", value: "Solo" }, { label: "Partner", value: "Partner" }, { label: "Close friends", value: "Close friends" }, { label: "Larger friend group", value: "Larger friend group" }, { label: "Family", value: "Family" }, { label: "Kids", value: "Kids" }, { label: "Colleagues", value: "Colleagues" }] },
+      { id: "entry.41962019", type: "radio", label: "Your age group", options: ["Under 18", "18-24", "25-34", "35-44", "45-54", "55+"] },
+      { id: "entry.297615991", type: "radio", label: "Your gender", options: ["Male", "Female", "Prefer not to say", "Other"] },
+      {
+        id: "entry.1665325264",
+        type: "radio",
+        label: "Which best describes you?",
+        help: "Select one",
+        allowOther: true,
+        options: [
+          "School Student / Representative",
+          "Young Adult Out For Fun",
+          "Parent With Children At Home",
+          "Working professional / decides team outings",
+          "Artsy / creative",
+          "College student",
+          "Government / tourism / institution representative",
+          "Pet parent",
+        ],
+      },
+      { id: "entry.40641649", type: "text", label: "Your occupation", placeholder: "e.g. designer, teacher, student…" },
+      {
+        id: "entry.1027552148",
+        type: "radio",
+        label: "Monthly household income (if applicable)",
+        help: "Optional",
+        optional: true,
+        allowOther: true,
+        options: ["Under ₹25,000", "₹25,000 – ₹50,000", "₹50,000 – ₹1 lakh", "₹1 lakh – ₹2 lakh"],
+      },
+      {
+        id: "entry.735323549",
+        type: "text",
+        label: "Institutions / Corporates only — your organisation type and typical group size",
+        help: "Optional",
+        optional: true,
+        placeholder: "e.g. college, 30 students",
+      },
+      {
+        id: "entry.960967655",
+        type: "radio",
+        label: "Where do you live?",
+        help: "If outside Vadodara, choose Other",
+        allowOther: true,
+        options: ["Vadodara"],
+      },
+      {
+        id: "entry.2127098852",
+        type: "checkbox",
+        label: "In your free time, what do you usually do for fun or relaxation?",
+        help: "Select all that apply",
+        allowOther: true,
+        options: [
+          "Watching movies / OTT",
+          "Hanging out with friends",
+          "Shopping",
+          "Outdoor activities / sports",
+          "Social media / browsing",
+          "Reading",
+          "Visiting entertainment venues (cinema, gaming zone, etc.)",
+          "Travel",
+          "Family time",
+        ],
+      },
     ],
   },
   {
     id: "habits",
-    title: "Your weekend rhythm",
+    title: "Your outing habits",
     kicker: "Chapter 02",
     emoji: "🌇",
     accent: "tangerine",
     questions: [
-      { id: "frequency", type: "radio", label: "How often do you go out for leisure or entertainment?", options: [{ label: "Almost every day", value: "Almost every day" }, { label: "A few times a week", value: "A few times a week" }, { label: "Once a week", value: "Once a week" }, { label: "A few times a month", value: "A few times a month" }, { label: "Rarely", value: "Rarely" }] },
-      { id: "budget", type: "select", label: "What's your typical spend per outing (per person)?", options: [{ label: "Under ₹500", value: "Under ₹500" }, { label: "₹500 – ₹1,500", value: "₹500 – ₹1,500" }, { label: "₹1,500 – ₹3,000", value: "₹1,500 – ₹3,000" }, { label: "₹3,000 – ₹6,000", value: "₹3,000 – ₹6,000" }, { label: "₹6,000+", value: "₹6,000+" }] },
-      { id: "planning", type: "radio", label: "How far in advance do you usually plan?", options: [{ label: "Same day / spontaneous", value: "Same day / spontaneous" }, { label: "1 – 2 days ahead", value: "1 – 2 days ahead" }, { label: "About a week ahead", value: "About a week ahead" }, { label: "Weeks in advance", value: "Weeks in advance" }] },
-      { id: "day_part", type: "checkbox", label: "When do you most often go out?", options: [{ label: "Weekday evenings", value: "Weekday evenings" }, { label: "Friday nights", value: "Friday nights" }, { label: "Saturday afternoons", value: "Saturday afternoons" }, { label: "Saturday nights", value: "Saturday nights" }, { label: "Sunday brunch", value: "Sunday brunch" }, { label: "Sunday evenings", value: "Sunday evenings" }] },
+      {
+        id: "entry.568559092",
+        type: "radio",
+        label: "Have you been to any paid entertainment or experience venue in the last 6 months?",
+        help: "Cinema, gaming zone, theme park, exhibition, VR/AR, etc.",
+        options: ["Yes", "No"],
+      },
+      {
+        id: "entry.18470500",
+        type: "radio",
+        label: "How often do you go out for paid entertainment or experiences?",
+        options: ["Weekly", "2 – 3 times a month", "Monthly", "A few times a year", "Rarely"],
+      },
+      {
+        id: "entry.1101617653",
+        type: "checkbox",
+        label: "What do you usually do?",
+        help: "Select all that apply",
+        allowOther: true,
+        options: [
+          "Cinema",
+          "Gaming / arcade",
+          "Theme / amusement park",
+          "Live events",
+          "Museums / exhibitions",
+          "VR / AR experiences",
+          "Eating out as the outing",
+        ],
+      },
+      {
+        id: "entry.926958870",
+        type: "radio",
+        label: "Typically, how much do you spend per person, per outing on entertainment — excluding food?",
+        options: ["Under ₹300", "₹300 – ₹600", "₹600 – ₹1,000", "₹1,000 – ₹1,500", "₹1,500 – ₹2,500", "₹2,500+"],
+      },
+      {
+        id: "entry.986532273",
+        type: "checkbox",
+        label: "Who do you usually go with?",
+        help: "Select all that apply",
+        allowOther: true,
+        options: ["Alone", "Partner", "Family with kids", "Friends", "Colleagues / team", "Pets", "College", "School", "Family"],
+      },
+      {
+        id: "entry.873875889",
+        type: "radio",
+        label: "How much do you usually spend on food & drinks during an outing, per person?",
+        options: ["Under ₹150", "₹150 – ₹250", "₹250 – ₹500", "₹500+"],
+      },
     ],
   },
   {
-    id: "preferences",
-    title: "What you love doing",
+    id: "imagine",
+    title: "Imagine the experience",
     kicker: "Chapter 03",
     emoji: "🎨",
     accent: "lime",
+    showImagineImages: true,
     questions: [
       {
-        id: "activities",
-        type: "checkbox",
-        label: "Which experiences excite you the most?",
-        help: "Pick up to 5",
-        max: 5,
-        options: [{ label: "Food & dining", value: "Food & dining" }, { label: "Cafés & coffee", value: "Cafés & coffee" }, { label: "Movies & cinema", value: "Movies & cinema" }, { label: "Live music", value: "Live music" }, { label: "Comedy & theatre", value: "Comedy & theatre" }, { label: "Museums & art", value: "Museums & art" }, { label: "Parks & outdoors", value: "Parks & outdoors" }, { label: "Adventure sports", value: "Adventure sports" }, { label: "Gaming & arcades", value: "Gaming & arcades" }, { label: "Shopping", value: "Shopping" }, { label: "Nightlife & bars", value: "Nightlife & bars" }, { label: "Weekend travel", value: "Weekend travel" }],
+        id: "entry.728203652",
+        type: "text",
+        label: "Imagine you just walked out of this experience. What's the first thing you'd tell someone?",
+        placeholder: "Short answer",
+        optional: true,
       },
-      { id: "discovery", type: "radio", label: "How do you usually discover new places?", options: [{ label: "Instagram / Social media", value: "Instagram / Social media" }, { label: "Friends & word of mouth", value: "Friends & word of mouth" }, { label: "Google Maps / reviews", value: "Google Maps / reviews" }, { label: "Curated blogs & guides", value: "Curated blogs & guides" }, { label: "Local events apps", value: "Local events apps" }, { label: "Just walking around", value: "Just walking around" }] },
-      { id: "vibe", type: "radio", label: "Which vibe do you gravitate toward?", options: [{ label: "Cozy & intimate", value: "Cozy & intimate" }, { label: "Trendy & upscale", value: "Trendy & upscale" }, { label: "Lively & social", value: "Lively & social" }, { label: "Quirky & offbeat", value: "Quirky & offbeat" }, { label: "Family-friendly", value: "Family-friendly" }, { label: "Nature & outdoors", value: "Nature & outdoors" }] },
+      {
+        id: "entry.696342517",
+        type: "radio",
+        label: "Who would you most likely come with?",
+        options: ["Partner", "Family", "Friends", "Colleagues / team", "Student group", "Alone", "Pets", "Your kids"],
+      },
     ],
   },
   {
-    id:"opinions",
-    title:"How you rate the scene",
-    kicker:"Chapter 04",
-    emoji:"⭐",
+    id: "visit",
+    title: "Would you visit?",
+    kicker: "Chapter 04",
+    emoji: "⭐",
     accent: "sky",
     questions: [
-      { id: "rate_variety", type: "rating", label: "How would you rate the variety of options in your city?", leftLabel: "Very limited", rightLabel: "Excellent" },
-      { id: "rate_value", type: "rating", label: "How satisfied are you with the value for money?", leftLabel: "Not at all", rightLabel: "Very satisfied" },
-      { id: "rate_discovery", type: "rating", label: "How easy is it to discover new experiences?", leftLabel: "Very hard", rightLabel: "Effortless" },
-      { id: "important", type: "checkbox", label: "What matters most when choosing a place?", help: "Pick up to 3", max: 3, options: [
-        { label: "Ambience", value: "Ambience" },
-        { label: "Price", value: "Price" },
-        { label: "Distance", value: "Distance" },
-        { label: "Reviews", value: "Reviews" },
-        { label: "Menu / offering", value: "Menu / offering" },
-        { label: "Crowd", value: "Crowd" },
-        { label: "Safety", value: "Safety" },
-        { label: "Instagrammability", value: "Instagrammability" },
-      ] },
+      {
+        id: "entry.1058231380",
+        type: "radio",
+        label: "How likely are you to visit this venue in its first six months?",
+        options: ["Very likely", "Likely", "Unlikely", "Very unlikely"],
+      },
+      {
+        id: "entry.288898767",
+        type: "radio",
+        label: "How often might you visit in a year?",
+        options: ["Once", "2 – 3 times", "4 – 6 times", "Monthly or more"],
+      },
+      {
+        id: "entry.1927809211",
+        type: "checkbox",
+        label: "What would make you want to visit?",
+        help: "Select all that apply",
+        allowOther: true,
+        options: [
+          "A new kind of experience",
+          "Good for kids / family",
+          "Team / group activity",
+          "Social-media worthy",
+          "A special occasion",
+          "A visitor / tourist attraction",
+          "Pet friendly",
+        ],
+      },
     ],
   },
   {
-    id: "wishes",
-    title: "One last thing",
+    id: "pricing",
+    title: "Pricing & discovery",
     kicker: "Chapter 05",
     emoji: "💭",
     accent: "rose",
     questions: [
-      { id: "missing", type: "textarea", label: "What's missing from your city's entertainment scene?", placeholder: "Tell us anything — a type of venue, an event, a service…" },
-      { id: "dream", type: "text", label: "Describe your dream weekend in one line.", placeholder: "e.g. rooftop jazz, ramen, and a late-night bookstore" },
-      { id: "email", type: "text", label: "Email (optional) — if you'd like early access to what we build.", placeholder: "you@example.com" },
+      {
+        id: "entry.81434430",
+        type: "radio",
+        label: "Immersive Room (60–90 minutes) — what feels like a fair price?",
+        options: ["Under ₹799", "₹800 – ₹999", "₹1,000 – ₹1,299", "₹1,300 – ₹1,499", "₹1,500 or above"],
+      },
+      {
+        id: "entry.1639420917",
+        type: "radio",
+        label: "Dome Experience — what feels like a fair price?",
+        options: ["Under ₹500", "₹500 – ₹799", "₹800 – ₹999", "₹1,000 or above"],
+      },
+      {
+        id: "entry.1948191618",
+        type: "radio",
+        label: "AR / VR Game — what feels like a fair price for ONE game?",
+        options: ["Under ₹200", "₹200 – ₹399", "₹400 – ₹599", "₹600 – ₹799", "₹799+"],
+      },
+      {
+        id: "entry.229220687",
+        type: "radio",
+        label: "Immersive Room + Dome bundle — what feels like a fair price?",
+        options: ["Under ₹1,000", "₹1,000 – ₹1,299", "₹1,300 – ₹1,599", "₹1,600 – ₹1,899", "₹1,899+"],
+      },
+      {
+        id: "entry.1092784356",
+        type: "radio",
+        label: "All-Access Bundle (Immersive Room + Dome + AR/VR) — what feels like a fair price?",
+        options: ["Under ₹1,500", "₹1,500 – ₹1,999", "₹2,000 – ₹2,499", "₹2,500 – ₹2,999", "₹3,000+"],
+      },
+      {
+        id: "entry.2039847036",
+        type: "radio",
+        label: "How appealing is a bundle (immersive + dome + one AR/VR game) versus buying separately?",
+        options: ["Much more appealing", "More appealing", "About the same", "Less appealing", "Much less appealing"],
+      },
+      {
+        id: "entry.1989439892",
+        type: "checkbox",
+        label: "If you upgraded to a Premium Experience, what benefits would you expect?",
+        help: "Select all that apply",
+        allowOther: true,
+        options: [
+          "Priority access / Skip the queue",
+          "Exclusive experiences or content",
+          "Access to VIP or private areas",
+          "Dedicated host or guide",
+          "Extended access / more time",
+        ],
+      },
+      {
+        id: "entry.1273275245",
+        type: "radio",
+        label: "What feels like a fair price for a Premium Experience?",
+        options: ["Under ₹2,000", "₹2,000 – ₹2,499", "₹2,500 – ₹2,999", "₹3,000 – ₹3,499", "₹3,500 – ₹3,999", "₹4,000 or above"],
+      },
+      {
+        id: "entry.1154363758",
+        type: "radio",
+        label: "What feels like a fair price for food & drink per person at such a venue?",
+        options: ["Under ₹150", "₹150", "₹250", "₹350", "₹350+"],
+      },
+      {
+        id: "entry.1654400987",
+        type: "radio",
+        label: "Would a season pass or membership interest you?",
+        options: ["Yes", "Maybe", "No"],
+      },
+      {
+        id: "entry.332897866",
+        type: "checkbox",
+        label: "Where would you expect to come across a place like this?",
+        help: "Select all that apply",
+        options: [
+          "Instagram",
+          "YouTube",
+          "WhatsApp",
+          "Friends & family",
+          "Google search",
+          "Local press / radio",
+          "School / college",
+          "Office / HR",
+          "Outdoor hoardings",
+          "Influencers",
+        ],
+      },
+      {
+        id: "entry.115913297",
+        type: "radio",
+        label: "Whose recommendation would you trust most?",
+        allowOther: true,
+        options: ["Friends", "Family", "Influencers", "Online reviews", "School / office"],
+      },
+      {
+        id: "entry.1877641893",
+        type: "radio",
+        label: "Would you be open to a short follow-up interview?",
+        help: "If yes, please share your contact details below.",
+        options: ["Yes", "No"],
+      },
+      {
+        id: "entry.1210283293",
+        type: "radio",
+        label: "Would you like to receive an invitation to the pre-launch / opening event?",
+        options: ["Yes", "No"],
+      },
+      {
+        id: "entry.1931159729",
+        type: "text",
+        label: "Contact details (optional)",
+        help: "Share your name, phone, or email so we can reach out.",
+        placeholder: "e.g. Riya · riya@email.com · +91…",
+        optional: true,
+      },
     ],
   },
 ];
@@ -148,7 +376,7 @@ function SurveyPage() {
   function validateSection(section: Section) {
     const next: Record<string, string> = {};
     for (const q of section.questions) {
-      if (q.id === "email" || q.id === "missing" || q.id === "dream") continue; // optional
+      if (q.optional) continue;
       const v = answers[q.id];
       if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0)) {
         next[q.id] = "Please answer this question.";
@@ -158,9 +386,8 @@ function SurveyPage() {
     return Object.keys(next).length === 0;
   }
 
-  function goNext() {
+  async function goNext() { {
     if (!validateSection(currentSection)) {
-      // scroll to first error
       const firstErr = Object.keys(errors)[0];
       if (firstErr) document.getElementById(`q-${firstErr}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
@@ -169,8 +396,10 @@ function SurveyPage() {
       setSectionIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      submitToGoogle();
-    }
+    await submitToGoogleForms();
+    setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
   }
 
   function goPrev() {
@@ -180,94 +409,30 @@ function SurveyPage() {
     }
   }
 
-  const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLScaIvmrcx0G3ZmHcjYFAnrpU7RzjKzFcjstTn3U_HdIZzm1cg/formResponse";
+  async function submitToGoogleForms() {
+  const formData = new URLSearchParams();
 
-  const GOOGLE_FIELDS = {
+  Object.entries(answers).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach(v => formData.append(key, v));
+    } else {
+      formData.append(key, String(value));
+    }
+  });
 
-age:"entry.1267687962",
-
-life_stage:"entry.979001997",
-
-city:"entry.1460113588",
-
-companions:"entry.1214338796",
-
-frequency:"entry.1483922260",
-
-budget:"entry.994825223",
-
-planning:"entry.1050896763",
-
-day_part:"entry.1286243172",
-
-activities:"entry.711178652",
-
-discovery:"entry.1685139984",
-
-vibe:"entry.595560342",
-
-rate_variety:"entry.2005960322",
-
-rate_value:"entry.1926955603",
-
-rate_discovery:"entry.527405177",
-
-important:"entry.1268508034",
-
-missing:"entry.1718695578",
-
-dream:"entry.1867160528",
-
-email:"entry.159814234",
-
-};
-    
-  async function submitToGoogle() {
-  const formData=new FormData();
-
-Object.entries(GOOGLE_FIELDS).forEach(([key,id])=>{
-
-const value=answers[key];
-
-if(value===undefined)return;
-
-if(Array.isArray(value)){
-
-value.forEach(v=>formData.append(id,v));
-
-}else{
-
-formData.append(id,String(value));
-
+  await fetch(
+    "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse",
+    {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    }
+  );
 }
 
-});
-
-console.log("===== GOOGLE FORM PAYLOAD =====");
-
-for (const [key, value] of formData.entries()) {
-  console.log(key, value);
-}
-
-console.log("===============================");
-
-await fetch(
-FORM_URL,
-{
-method:"POST",
-mode:"no-cors",
-body:formData
-}
-);
-
-setSubmitted(true);
-
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
-}
-  
   return (
     <div className="min-h-screen bg-background bg-dots relative overflow-hidden">
       <BackgroundAccents />
@@ -461,6 +626,21 @@ function SectionCard({
           </div>
         </div>
 
+        {section.showImagineImages && (
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <img
+              src={immersive1.url}
+              alt="Immersive art and light installations"
+              className="w-full h-48 sm:h-56 object-cover rounded-2xl border-[1.5px] border-ink"
+            />
+            <img
+              src={immersive2.url}
+              alt="VR and interactive entertainment experiences"
+              className="w-full h-48 sm:h-56 object-cover rounded-2xl border-[1.5px] border-ink"
+            />
+          </div>
+        )}
+
         <div className="mt-8 space-y-8">
           {section.questions.map((q) => (
             <QuestionField
@@ -497,6 +677,28 @@ function SectionCard({
 
 // ---------- Fields ----------
 
+const OTHER_PREFIX = "Other: ";
+
+function splitOther(value: string | string[] | number | undefined, options: string[]): { selected: string | string[] | undefined; otherText: string; otherActive: boolean } {
+  if (Array.isArray(value)) {
+    const otherEntry = value.find((v) => typeof v === "string" && v.startsWith(OTHER_PREFIX));
+    const cleaned = value.filter((v) => options.includes(v));
+    return {
+      selected: cleaned,
+      otherText: otherEntry ? otherEntry.slice(OTHER_PREFIX.length) : "",
+      otherActive: !!otherEntry || value.some((v) => v === "__other__"),
+    };
+  }
+  if (typeof value === "string") {
+    if (value.startsWith(OTHER_PREFIX)) {
+      return { selected: undefined, otherText: value.slice(OTHER_PREFIX.length), otherActive: true };
+    }
+    if (options.includes(value)) return { selected: value, otherText: "", otherActive: false };
+    if (value === "__other__") return { selected: undefined, otherText: "", otherActive: true };
+  }
+  return { selected: undefined, otherText: "", otherActive: false };
+}
+
 function QuestionField({
   q, value, error, onChange,
 }: {
@@ -509,60 +711,122 @@ function QuestionField({
     <div id={`q-${q.id}`} className="scroll-mt-24">
       <label className="block font-display text-lg sm:text-xl font-semibold leading-snug">
         {q.label}
+        {"optional" in q && q.optional && (
+          <span className="ml-2 text-xs font-mono font-normal text-muted-foreground uppercase tracking-wider">optional</span>
+        )}
       </label>
       {q.help && <p className="mt-1 text-sm text-muted-foreground">{q.help}</p>}
 
       <div className="mt-4">
-        {q.type === "radio" && (
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {q.options.map((opt) => {
-              const selected = value === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className="chip-option"
-                  data-selected={selected}
-                  onClick={() => {
-                    return onChange(opt.value);
-                  }}
-                >
-                  <span className={`grid h-5 w-5 place-items-center rounded-full border-[1.5px] border-ink ${selected ? "bg-ink" : "bg-card"}`}>
-                    {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
-                  </span>
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {q.type === "radio" && (() => {
+          const { selected, otherText, otherActive } = splitOther(value, q.options);
+          return (
+            <>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {q.options.map((opt) => {
+                  const isSelected = selected === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className="chip-option"
+                      data-selected={isSelected}
+                      onClick={() => onChange(opt)}
+                    >
+                      <span className={`grid h-5 w-5 place-items-center rounded-full border-[1.5px] border-ink ${isSelected ? "bg-ink" : "bg-card"}`}>
+                        {isSelected && <span className="h-2 w-2 rounded-full bg-primary" />}
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+                {q.allowOther && (
+                  <button
+                    type="button"
+                    className="chip-option"
+                    data-selected={otherActive}
+                    onClick={() => onChange(otherText ? `${OTHER_PREFIX}${otherText}` : "__other__")}
+                  >
+                    <span className={`grid h-5 w-5 place-items-center rounded-full border-[1.5px] border-ink ${otherActive ? "bg-ink" : "bg-card"}`}>
+                      {otherActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    </span>
+                    <span>Other…</span>
+                  </button>
+                )}
+              </div>
+              {q.allowOther && otherActive && (
+                <input
+                  type="text"
+                  className="input-juno mt-3"
+                  placeholder="Please specify"
+                  value={otherText}
+                  onChange={(e) => onChange(e.target.value ? `${OTHER_PREFIX}${e.target.value}` : "__other__")}
+                />
+              )}
+            </>
+          );
+        })()}
 
-        {q.type === "checkbox" && (
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {q.options.map((opt) => {
-              const arr = (value as string[] | undefined) ?? [];
-              const selected = arr.includes(opt.value);
-              const atMax = q.max !== undefined && arr.length >= q.max && !selected;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className="chip-option disabled:opacity-40"
-                  data-selected={selected}
-                  disabled={atMax}
-                  onClick={() => {
-                    onChange(selected ? arr.filter((x) => x !== opt.value) : [...arr, opt.value]);
-                  }}
-                >
-                  <span className={`grid h-5 w-5 place-items-center rounded-md border-[1.5px] border-ink ${selected ? "bg-ink" : "bg-card"}`}>
-                    {selected && <span className="text-primary text-xs leading-none">✓</span>}
-                  </span>
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {q.type === "checkbox" && (() => {
+          const { selected, otherText, otherActive } = splitOther(value, q.options);
+          const arr = (selected as string[] | undefined) ?? [];
+          const totalCount = arr.length + (otherActive ? 1 : 0);
+          const buildValue = (nextArr: string[], nextOther: string | null) => {
+            const out: string[] = [...nextArr];
+            if (nextOther !== null) out.push(nextOther ? `${OTHER_PREFIX}${nextOther}` : "__other__");
+            return out;
+          };
+          return (
+            <>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {q.options.map((opt) => {
+                  const isSelected = arr.includes(opt);
+                  const atMax = q.max !== undefined && totalCount >= q.max && !isSelected;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className="chip-option disabled:opacity-40"
+                      data-selected={isSelected}
+                      disabled={atMax}
+                      onClick={() => {
+                        const nextArr = isSelected ? arr.filter((x) => x !== opt) : [...arr, opt];
+                        onChange(buildValue(nextArr, otherActive ? otherText : null));
+                      }}
+                    >
+                      <span className={`grid h-5 w-5 place-items-center rounded-md border-[1.5px] border-ink ${isSelected ? "bg-ink" : "bg-card"}`}>
+                        {isSelected && <span className="text-primary text-xs leading-none">✓</span>}
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+                {q.allowOther && (
+                  <button
+                    type="button"
+                    className="chip-option"
+                    data-selected={otherActive}
+                    onClick={() => onChange(buildValue(arr, otherActive ? null : ""))}
+                  >
+                    <span className={`grid h-5 w-5 place-items-center rounded-md border-[1.5px] border-ink ${otherActive ? "bg-ink" : "bg-card"}`}>
+                      {otherActive && <span className="text-primary text-xs leading-none">✓</span>}
+                    </span>
+                    <span>Other…</span>
+                  </button>
+                )}
+              </div>
+              {q.allowOther && otherActive && (
+                <input
+                  type="text"
+                  className="input-juno mt-3"
+                  placeholder="Please specify"
+                  value={otherText}
+                  onChange={(e) => onChange(buildValue(arr, e.target.value))}
+                />
+              )}
+            </>
+          );
+        })()}
 
         {q.type === "select" && (
           <div className="relative">
@@ -572,7 +836,7 @@ function QuestionField({
               onChange={(e) => onChange(e.target.value)}
             >
               <option value="" disabled>Choose one…</option>
-              {q.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {q.options.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm">▾</span>
           </div>
