@@ -149,8 +149,7 @@ function SurveyPage() {
       setSectionIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      submitToGoogle();
     }
   }
 
