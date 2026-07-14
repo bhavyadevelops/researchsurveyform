@@ -159,7 +159,84 @@ function SurveyPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
+    async function submitToGoogle() {
+  const formData = new FormData();
 
+  formData.append("entry.1267687962", answers.age as string);
+  formData.append("entry.979001997", answers.life_stage as string);
+  formData.append("entry.1460113588", answers.city as string);
+
+  (answers.companions as string[] || []).forEach(v =>
+    formData.append("entry.1214338796", v)
+  );
+
+  formData.append("entry.1483922260", answers.frequency as string);
+  formData.append("entry.994825223", answers.budget as string);
+  formData.append("entry.1050896763", answers.planning as string);
+
+  (answers.day_part as string[] || []).forEach(v =>
+    formData.append("entry.1286243172", v)
+  );
+
+  (answers.activities as string[] || []).forEach(v =>
+    formData.append("entry.711178652", v)
+  );
+
+  formData.append("entry.1685139984", answers.discovery as string);
+
+  formData.append("entry.595560342", answers.vibe as string);
+
+  formData.append(
+    "entry.2005960322",
+    String(answers.rate_variety ?? "")
+  );
+
+  formData.append(
+    "entry.1926955603",
+    String(answers.rate_value ?? "")
+  );
+
+  formData.append(
+    "entry.527405177",
+    String(answers.rate_discovery ?? "")
+  );
+
+  (answers.important as string[] || []).forEach(v =>
+    formData.append("entry.1268508034", v)
+  );
+
+  formData.append(
+    "entry.1718695578",
+    answers.missing as string || ""
+  );
+
+  formData.append(
+    "entry.1867160528",
+    answers.dream as string || ""
+  );
+
+  formData.append(
+    "entry.159814234",
+    answers.email as string || ""
+  );
+
+  await fetch(
+    "https://docs.google.com/forms/d/e/1FAIpQLSfAH9UGM120Hf99Xv32j9KxasdbUBc-6B4qxXRpwTJ76bE67Q/formResponse",
+    {
+      method: "POST",
+      mode: "no-cors",
+      body: formData,
+    }
+  );
+
+  setSubmitted(true);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+  
   return (
     <div className="min-h-screen bg-background bg-dots relative overflow-hidden">
       <BackgroundAccents />
