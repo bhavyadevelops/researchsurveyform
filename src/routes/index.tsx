@@ -7,10 +7,21 @@ export const Route = createFileRoute("/")({
 
 // ---------- Survey model ----------
 
+type Option = {
+  label: string;
+  value: string;
+};
+
 type Question =
-  | { id: string; type: "radio"; label: string; help?: string; options: string[] }
-  | { id: string; type: "checkbox"; label: string; help?: string; options: string[]; max?: number }
-  | { id: string; type: "select"; label: string; help?: string; options: string[] }
+  | {
+      id: string;
+      type: "radio";
+      label: string;
+      help?: string;
+      options: Option[];
+    }
+  | { id: string; type: "checkbox"; label: string; help?: string; options: Option[]; max?: number }
+  | { id: string; type: "select"; label: string; help?: string; options: Option[] }
   | { id: string; type: "rating"; label: string; help?: string; scale?: number; leftLabel?: string; rightLabel?: string }
   | { id: string; type: "text"; label: string; help?: string; placeholder?: string }
   | { id: string; type: "textarea"; label: string; help?: string; placeholder?: string };
@@ -32,10 +43,10 @@ const SECTIONS: Section[] = [
     emoji: "🎟️",
     accent: "grape",
     questions: [
-      { id: "age", type: "radio", label: "Which age group do you belong to?", options: ["Under 18", "18 – 24", "25 – 34", "35 – 44", "45 – 54", "55+"] },
-      { id: "life_stage", type: "radio", label: "How would you describe your current life stage?", options: ["Student", "Young professional", "Couple / Partnered", "Parent with kids", "Empty nester"] },
+      { id: "age", type: "radio", label: "Which age group do you belong to?", options: [{ label: "Under 18", value: "Under 18" }, { label: "18 – 24", value: "18 – 24" }, { label: "25 – 34", value: "25 – 34" }, { label: "35 – 44", value: "35 – 44" }, { label: "45 – 54", value: "45 – 54" }, { label: "55+", value: "55+" }] },
+      { id: "life_stage", type: "radio", label: "How would you describe your current life stage?", options: [{ label: "Student", value: "Student" }, { label: "Young professional", value: "Young professional" }, { label: "Couple / Partnered", value: "Couple / Partnered" }, { label: "Parent with kids", value: "Parent with kids" }, { label: "Empty nester", value: "Empty nester" }] },
       { id: "city", type: "text", label: "Which city do you mostly hang out in?", placeholder: "e.g. Bengaluru, Mumbai, Delhi…" },
-      { id: "companions", type: "checkbox", label: "Who do you usually go out with?", help: "Pick all that apply", options: ["Solo", "Partner", "Close friends", "Larger friend group", "Family", "Kids", "Colleagues"] },
+      { id: "companions", type: "checkbox", label: "Who do you usually go out with?", help: "Pick all that apply", options: [{ label: "Solo", value: "Solo" }, { label: "Partner", value: "Partner" }, { label: "Close friends", value: "Close friends" }, { label: "Larger friend group", value: "Larger friend group" }, { label: "Family", value: "Family" }, { label: "Kids", value: "Kids" }, { label: "Colleagues", value: "Colleagues" }] },
     ],
   },
   {
@@ -45,10 +56,10 @@ const SECTIONS: Section[] = [
     emoji: "🌇",
     accent: "tangerine",
     questions: [
-      { id: "frequency", type: "radio", label: "How often do you go out for leisure or entertainment?", options: ["Almost every day", "A few times a week", "Once a week", "A few times a month", "Rarely"] },
-      { id: "budget", type: "select", label: "What's your typical spend per outing (per person)?", options: ["Under ₹500", "₹500 – ₹1,500", "₹1,500 – ₹3,000", "₹3,000 – ₹6,000", "₹6,000+"] },
-      { id: "planning", type: "radio", label: "How far in advance do you usually plan?", options: ["Same day / spontaneous", "1 – 2 days ahead", "About a week ahead", "Weeks in advance"] },
-      { id: "day_part", type: "checkbox", label: "When do you most often go out?", options: ["Weekday evenings", "Friday nights", "Saturday afternoons", "Saturday nights", "Sunday brunch", "Sunday evenings"] },
+      { id: "frequency", type: "radio", label: "How often do you go out for leisure or entertainment?", options: [{ label: "Almost every day", value: "Almost every day" }, { label: "A few times a week", value: "A few times a week" }, { label: "Once a week", value: "Once a week" }, { label: "A few times a month", value: "A few times a month" }, { label: "Rarely", value: "Rarely" }] },
+      { id: "budget", type: "select", label: "What's your typical spend per outing (per person)?", options: [{ label: "Under ₹500", value: "Under ₹500" }, { label: "₹500 – ₹1,500", value: "₹500 – ₹1,500" }, { label: "₹1,500 – ₹3,000", value: "₹1,500 – ₹3,000" }, { label: "₹3,000 – ₹6,000", value: "₹3,000 – ₹6,000" }, { label: "₹6,000+", value: "₹6,000+" }] },
+      { id: "planning", type: "radio", label: "How far in advance do you usually plan?", options: [{ label: "Same day / spontaneous", value: "Same day / spontaneous" }, { label: "1 – 2 days ahead", value: "1 – 2 days ahead" }, { label: "About a week ahead", value: "About a week ahead" }, { label: "Weeks in advance", value: "Weeks in advance" }] },
+      { id: "day_part", type: "checkbox", label: "When do you most often go out?", options: [{ label: "Weekday evenings", value: "Weekday evenings" }, { label: "Friday nights", value: "Friday nights" }, { label: "Saturday afternoons", value: "Saturday afternoons" }, { label: "Saturday nights", value: "Saturday nights" }, { label: "Sunday brunch", value: "Sunday brunch" }, { label: "Sunday evenings", value: "Sunday evenings" }] },
     ],
   },
   {
@@ -64,23 +75,32 @@ const SECTIONS: Section[] = [
         label: "Which experiences excite you the most?",
         help: "Pick up to 5",
         max: 5,
-        options: ["Food & dining", "Cafés & coffee", "Movies & cinema", "Live music", "Comedy & theatre", "Museums & art", "Parks & outdoors", "Adventure sports", "Gaming & arcades", "Shopping", "Nightlife & bars", "Weekend travel"],
+        options: [{ label: "Food & dining", value: "Food & dining" }, { label: "Cafés & coffee", value: "Cafés & coffee" }, { label: "Movies & cinema", value: "Movies & cinema" }, { label: "Live music", value: "Live music" }, { label: "Comedy & theatre", value: "Comedy & theatre" }, { label: "Museums & art", value: "Museums & art" }, { label: "Parks & outdoors", value: "Parks & outdoors" }, { label: "Adventure sports", value: "Adventure sports" }, { label: "Gaming & arcades", value: "Gaming & arcades" }, { label: "Shopping", value: "Shopping" }, { label: "Nightlife & bars", value: "Nightlife & bars" }, { label: "Weekend travel", value: "Weekend travel" }],
       },
-      { id: "discovery", type: "radio", label: "How do you usually discover new places?", options: ["Instagram / Social media", "Friends & word of mouth", "Google Maps / reviews", "Curated blogs & guides", "Local events apps", "Just walking around"] },
-      { id: "vibe", type: "radio", label: "Which vibe do you gravitate toward?", options: ["Cozy & intimate", "Trendy & upscale", "Lively & social", "Quirky & offbeat", "Family-friendly", "Nature & outdoors"] },
+      { id: "discovery", type: "radio", label: "How do you usually discover new places?", options: [{ label: "Instagram / Social media", value: "Instagram / Social media" }, { label: "Friends & word of mouth", value: "Friends & word of mouth" }, { label: "Google Maps / reviews", value: "Google Maps / reviews" }, { label: "Curated blogs & guides", value: "Curated blogs & guides" }, { label: "Local events apps", value: "Local events apps" }, { label: "Just walking around", value: "Just walking around" }] },
+      { id: "vibe", type: "radio", label: "Which vibe do you gravitate toward?", options: [{ label: "Cozy & intimate", value: "Cozy & intimate" }, { label: "Trendy & upscale", value: "Trendy & upscale" }, { label: "Lively & social", value: "Lively & social" }, { label: "Quirky & offbeat", value: "Quirky & offbeat" }, { label: "Family-friendly", value: "Family-friendly" }, { label: "Nature & outdoors", value: "Nature & outdoors" }] },
     ],
   },
   {
-    id: "opinions",
-    title: "How you rate the scene",
-    kicker: "Chapter 04",
-    emoji: "⭐",
+    id:"opinions",
+    title:"How you rate the scene",
+    kicker:"Chapter 04",
+    emoji:"⭐",
     accent: "sky",
     questions: [
       { id: "rate_variety", type: "rating", label: "How would you rate the variety of options in your city?", leftLabel: "Very limited", rightLabel: "Excellent" },
       { id: "rate_value", type: "rating", label: "How satisfied are you with the value for money?", leftLabel: "Not at all", rightLabel: "Very satisfied" },
       { id: "rate_discovery", type: "rating", label: "How easy is it to discover new experiences?", leftLabel: "Very hard", rightLabel: "Effortless" },
-      { id: "important", type: "checkbox", label: "What matters most when choosing a place?", help: "Pick up to 3", max: 3, options: ["Ambience", "Price", "Distance", "Reviews", "Menu / offering", "Crowd", "Safety", "Instagrammability"] },
+      { id: "important", type: "checkbox", label: "What matters most when choosing a place?", help: "Pick up to 3", max: 3, options: [
+        { label: "Ambience", value: "Ambience" },
+        { label: "Price", value: "Price" },
+        { label: "Distance", value: "Distance" },
+        { label: "Reviews", value: "Reviews" },
+        { label: "Menu / offering", value: "Menu / offering" },
+        { label: "Crowd", value: "Crowd" },
+        { label: "Safety", value: "Safety" },
+        { label: "Instagrammability", value: "Instagrammability" },
+      ] },
     ],
   },
   {
@@ -159,82 +179,85 @@ function SurveyPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
-    async function submitToGoogle() {
-  const formData = new FormData();
 
-  formData.append("entry.1267687962", answers.age as string);
-  formData.append("entry.979001997", answers.life_stage as string);
-  formData.append("entry.1460113588", answers.city as string);
+  const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLScaIvmrcx0G3ZmHcjYFAnrpU7RzjKzFcjstTn3U_HdIZzm1cg/formResponse";
 
-  (answers.companions as string[] || []).forEach(v =>
-    formData.append("entry.1214338796", v)
-  );
+  const GOOGLE_FIELDS = {
 
-  formData.append("entry.1483922260", answers.frequency as string);
-  formData.append("entry.994825223", answers.budget as string);
-  formData.append("entry.1050896763", answers.planning as string);
+age:"entry.1267687962",
 
-  (answers.day_part as string[] || []).forEach(v =>
-    formData.append("entry.1286243172", v)
-  );
+life_stage:"entry.979001997",
 
-  (answers.activities as string[] || []).forEach(v =>
-    formData.append("entry.711178652", v)
-  );
+city:"entry.1460113588",
 
-  formData.append("entry.1685139984", answers.discovery as string);
+companions:"entry.1214338796",
 
-  formData.append("entry.595560342", answers.vibe as string);
+frequency:"entry.1483922260",
 
-  formData.append(
-    "entry.2005960322",
-    String(answers.rate_variety ?? "")
-  );
+budget:"entry.994825223",
 
-  formData.append(
-    "entry.1926955603",
-    String(answers.rate_value ?? "")
-  );
+planning:"entry.1050896763",
 
-  formData.append(
-    "entry.527405177",
-    String(answers.rate_discovery ?? "")
-  );
+day_part:"entry.1286243172",
 
-  (answers.important as string[] || []).forEach(v =>
-    formData.append("entry.1268508034", v)
-  );
+activities:"entry.711178652",
 
-  formData.append(
-    "entry.1718695578",
-    answers.missing as string || ""
-  );
+discovery:"entry.1685139984",
 
-  formData.append(
-    "entry.1867160528",
-    answers.dream as string || ""
-  );
+vibe:"entry.595560342",
 
-  formData.append(
-    "entry.159814234",
-    answers.email as string || ""
-  );
+rate_variety:"entry.2005960322",
 
-  await fetch(
-    "https://docs.google.com/forms/d/e/1FAIpQLScaIvmrcx0G3ZmHcjYFAnrpU7RzjKzFcjstTn3U_HdIZzm1cg/formResponse",
-    {
-      method: "POST",
-      mode: "no-cors",
-      body: formData,
-    }
-  );
+rate_value:"entry.1926955603",
 
-  setSubmitted(true);
+rate_discovery:"entry.527405177",
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
+important:"entry.1268508034",
+
+missing:"entry.1718695578",
+
+dream:"entry.1867160528",
+
+email:"entry.159814234",
+
+};
+    
+  async function submitToGoogle() {
+  const formData=new FormData();
+
+Object.entries(GOOGLE_FIELDS).forEach(([key,id])=>{
+
+const value=answers[key];
+
+if(value===undefined)return;
+
+if(Array.isArray(value)){
+
+value.forEach(v=>formData.append(id,v));
+
+}else{
+
+formData.append(id,String(value));
+
+}
+
+});
+
+await fetch(
+FORM_URL,
+{
+method:"POST",
+mode:"no-cors",
+body:formData
+}
+);
+
+setSubmitted(true);
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 }
   
   return (
@@ -485,19 +508,21 @@ function QuestionField({
         {q.type === "radio" && (
           <div className="grid gap-2.5 sm:grid-cols-2">
             {q.options.map((opt) => {
-              const selected = value === opt;
+              const selected = value === opt.value;
               return (
                 <button
-                  key={opt}
+                  key={opt.value}
                   type="button"
                   className="chip-option"
                   data-selected={selected}
-                  onClick={() => onChange(opt)}
+                  onClick={() => {
+                    return onChange(opt.value);
+                  }}
                 >
                   <span className={`grid h-5 w-5 place-items-center rounded-full border-[1.5px] border-ink ${selected ? "bg-ink" : "bg-card"}`}>
                     {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
                   </span>
-                  <span>{opt}</span>
+                  <span>{opt.label}</span>
                 </button>
               );
             })}
@@ -508,23 +533,23 @@ function QuestionField({
           <div className="grid gap-2.5 sm:grid-cols-2">
             {q.options.map((opt) => {
               const arr = (value as string[] | undefined) ?? [];
-              const selected = arr.includes(opt);
+              const selected = arr.includes(opt.value);
               const atMax = q.max !== undefined && arr.length >= q.max && !selected;
               return (
                 <button
-                  key={opt}
+                  key={opt.value}
                   type="button"
                   className="chip-option disabled:opacity-40"
                   data-selected={selected}
                   disabled={atMax}
                   onClick={() => {
-                    onChange(selected ? arr.filter((x) => x !== opt) : [...arr, opt]);
+                    onChange(selected ? arr.filter((x) => x !== opt.value) : [...arr, opt.value]);
                   }}
                 >
                   <span className={`grid h-5 w-5 place-items-center rounded-md border-[1.5px] border-ink ${selected ? "bg-ink" : "bg-card"}`}>
                     {selected && <span className="text-primary text-xs leading-none">✓</span>}
                   </span>
-                  <span>{opt}</span>
+                  <span>{opt.label}</span>
                 </button>
               );
             })}
@@ -539,7 +564,7 @@ function QuestionField({
               onChange={(e) => onChange(e.target.value)}
             >
               <option value="" disabled>Choose one…</option>
-              {q.options.map((o) => <option key={o} value={o}>{o}</option>)}
+              {q.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm">▾</span>
           </div>
