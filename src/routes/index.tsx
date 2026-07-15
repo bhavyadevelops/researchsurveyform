@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import immersive from "@/assets/immersive.jpg";
 import dome from "@/assets/dome.jpg";
 import image from "@/assets/image.png";
-import img3 from "@/assets/img.png";
+import img3 from "@/assets/img3.png";
 import img2 from "@/assets/img2.png";
 
 export const Route = createFileRoute("/")({
