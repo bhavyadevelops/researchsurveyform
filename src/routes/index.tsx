@@ -367,48 +367,11 @@ const SECTIONS: Section[] = [
 // ---------- Google Form submission ----------
 
 const GOOGLE_FORM_ACTION =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/FormResponse";
-const GOOGLE_FORM_IFRAME = "weekender-gform-sink";
-
-function appendField(form: HTMLFormElement, name: string, value: string) {
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = name;
-  input.value = value;
-  form.appendChild(input);
-}
-
-function appendAnswer(form: HTMLFormElement, entryId: string, raw: string) {
-  if (raw.startsWith(OTHER_PREFIX)) {
-    appendField(form, entryId, "__other_option__");
-    appendField(form, `${entryId}.other_option_response`, raw.slice(OTHER_PREFIX.length));
-  } else if (raw === "__other__") {
-    appendField(form, entryId, "__other_option__");
-    appendField(form, `${entryId}.other_option_response`, "");
-  } else {
-    appendField(form, entryId, raw);
-  }
-}
+  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse";
 
 function submitToGoogleForm(answers: Record<string, string | string[] | number>) {
-  if (typeof document === "undefined") return;
+  const formData = new URLSearchParams();
 
-  let iframe = document.getElementById(GOOGLE_FORM_IFRAME) as HTMLIFrameElement | null;
-  if (!iframe) {
-    iframe = document.createElement("iframe");
-    iframe.name = GOOGLE_FORM_IFRAME;
-    iframe.id = GOOGLE_FORM_IFRAME;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-  }
-
-  const form = document.createElement("form");
-  form.action = GOOGLE_FORM_ACTION;
-  form.method = "POST";
-  form.target = GOOGLE_FORM_IFRAME;
-  form.style.display = "none";
-
-  // Preserve section order so fields post in the same order as the questions.
   for (const section of SECTIONS) {
     for (const q of section.questions) {
       const v = answers[q.id];
@@ -417,17 +380,39 @@ function submitToGoogleForm(answers: Record<string, string | string[] | number>)
         if (v.length === 0) continue;
         for (const item of v) {
           if (item === "" || item === undefined) continue;
-          appendAnswer(form, q.id, String(item));
+          if (typeof item === "string" && item.startsWith(OTHER_PREFIX)) {
+            formData.append(q.id, "__other_option__");
+            formData.append(`${q.id}.other_option_response`, item.slice(OTHER_PREFIX.length));
+          } else if (item === "__other__") {
+            formData.append(q.id, "__other_option__");
+            formData.append(`${q.id}.other_option_response`, "");
+          } else {
+            formData.append(q.id, String(item));
+          }
         }
       } else {
-        appendAnswer(form, q.id, String(v));
+        const raw = String(v);
+        if (raw.startsWith(OTHER_PREFIX)) {
+          formData.append(q.id, "__other_option__");
+          formData.append(`${q.id}.other_option_response`, raw.slice(OTHER_PREFIX.length));
+        } else if (raw === "__other__") {
+          formData.append(q.id, "__other_option__");
+          formData.append(`${q.id}.other_option_response`, "");
+        } else {
+          formData.append(q.id, raw);
+        }
       }
     }
   }
 
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(() => form.remove(), 1000);
+  fetch(GOOGLE_FORM_ACTION, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData.toString(),
+  }).catch(() => {
+    // no-cors responses are opaque, so errors here are expected and harmless
+  });
 }
 
 // ---------- Page ----------
@@ -1038,9 +1023,7 @@ function ThankYou({ answers }: { answers: Record<string, string | string[] | num
           You've helped shape a smarter, more delightful entertainment scene. Every answer moves the
           needle for how weekends get better.
         </p>
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border-[1.5px] border-ink bg-cream px-4 py-2 font-mono text-xs">
-          {count} responses recorded · confidential
-        </div>
+
       </div>
     </section>
   );
