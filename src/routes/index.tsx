@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import immersive from "@/assets/immersive.jpg";
 import dome from "@/assets/dome.jpg";
 import image from "@/assets/image.png";
-import img from "@/assets/img.png";
+import img3 from "@/assets/img.png";
 import img2 from "@/assets/img2.png";
 
 export const Route = createFileRoute("/")({
@@ -348,6 +348,72 @@ const SECTIONS: Section[] = [
   },
 ];
 
+// ---------- Google Form submission ----------
+
+const GOOGLE_FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse";
+const GOOGLE_FORM_IFRAME = "weekender-gform-sink";
+
+function appendField(form: HTMLFormElement, name: string, value: string) {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = value;
+  form.appendChild(input);
+}
+
+function appendAnswer(form: HTMLFormElement, entryId: string, raw: string) {
+  if (raw.startsWith(OTHER_PREFIX)) {
+    appendField(form, entryId, "__other_option__");
+    appendField(form, `${entryId}.other_option_response`, raw.slice(OTHER_PREFIX.length));
+  } else if (raw === "__other__") {
+    appendField(form, entryId, "__other_option__");
+    appendField(form, `${entryId}.other_option_response`, "");
+  } else {
+    appendField(form, entryId, raw);
+  }
+}
+
+function submitToGoogleForm(answers: Record<string, string | string[] | number>) {
+  if (typeof document === "undefined") return;
+
+  let iframe = document.getElementById(GOOGLE_FORM_IFRAME) as HTMLIFrameElement | null;
+  if (!iframe) {
+    iframe = document.createElement("iframe");
+    iframe.name = GOOGLE_FORM_IFRAME;
+    iframe.id = GOOGLE_FORM_IFRAME;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+  }
+
+  const form = document.createElement("form");
+  form.action = GOOGLE_FORM_ACTION;
+  form.method = "POST";
+  form.target = GOOGLE_FORM_IFRAME;
+  form.style.display = "none";
+
+  // Preserve section order so fields post in the same order as the questions.
+  for (const section of SECTIONS) {
+    for (const q of section.questions) {
+      const v = answers[q.id];
+      if (v === undefined || v === "") continue;
+      if (Array.isArray(v)) {
+        if (v.length === 0) continue;
+        for (const item of v) {
+          if (item === "" || item === undefined) continue;
+          appendAnswer(form, q.id, String(item));
+        }
+      } else {
+        appendAnswer(form, q.id, String(v));
+      }
+    }
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(() => form.remove(), 1000);
+}
+
 // ---------- Page ----------
 
 function SurveyPage() {
@@ -389,7 +455,7 @@ function SurveyPage() {
     return Object.keys(next).length === 0;
   }
 
-  async function goNext()  {
+  function goNext() {
     if (!validateSection(currentSection)) {
       const firstErr = Object.keys(errors)[0];
       if (firstErr) document.getElementById(`q-${firstErr}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -399,10 +465,10 @@ function SurveyPage() {
       setSectionIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-    await submitToGoogleForms();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
+      submitToGoogleForm(answers);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   function goPrev() {
@@ -411,30 +477,6 @@ function SurveyPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
-
-  async function submitToGoogleForms() {
-  const formData = new URLSearchParams();
-
-  Object.entries(answers).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
-      value.forEach(v => formData.append(key, v));
-    } else {
-      formData.append(key, String(value));
-    }
-  });
-
-  await fetch(
-    "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse",
-    {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: formData.toString(),
-    }
-  );
-}
 
   return (
     <div className="min-h-screen bg-background bg-dots relative overflow-hidden">
@@ -518,7 +560,7 @@ function Hero({ onStart }: { onStart: () => void }) {
           <span className="relative z-10">entertainment</span>
           <span
             aria-hidden
-            className="absolute inset-x-0 bottom-1 h-3 sm:h-4 -z-0 rounded-full"
+            className="absolute inset-x-0 bottom-1 h-3 sm:h-4 z-0 rounded-full"
             style={{ background: "var(--primary)" }}
           />
         </span>{" "}
@@ -632,12 +674,12 @@ function SectionCard({
         {section.showImagineImages && (
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <img
-              src={img}
+              src={img2}
               alt="Immersive art and light installations"
               className="w-full h-48 sm:h-56 object-cover rounded-2xl border-[1.5px] border-ink"
             />
             <img
-              src={img2}
+              src={img3}
               alt="VR and interactive entertainment experiences"
               className="w-full h-48 sm:h-56 object-cover rounded-2xl border-[1.5px] border-ink"
             />
@@ -903,7 +945,7 @@ function QuestionField({
 
         {q.type === "textarea" && (
           <textarea
-            className="input-juno min-h-[120px] resize-y"
+            className="input-juno min-h-30 resize-y"
             placeholder={q.placeholder}
             value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
@@ -940,7 +982,7 @@ function RatingField({
               type="button"
               onClick={() => onChange(n)}
               data-selected={selected}
-              className="chip-option !w-14 !justify-center !py-3.5 font-display text-lg font-bold"
+              className="chip-option w-14! justify-center! py-3.5! font-display text-lg font-bold"
               aria-label={`Rating ${n}`}
             >
               {n}
@@ -1024,5 +1066,3 @@ function BackgroundAccents() {
     </div>
   );
 }
-
-
