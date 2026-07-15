@@ -41,7 +41,7 @@ const SECTIONS: Section[] = [
     accent: "grape",
     questions: [
       { id: "entry.41962019", type: "radio", label: "Your age group", options: ["Under 18", "18-24", "25-34", "35-44", "45-54", "55+"] },
-      { id: "entry.297615991", type: "radio", label: "Your gender", options: ["Male", "Female", "Prefer not to say", "Other"] },
+      { id: "entry.297615991", type: "radio", label: "Your Gender", options: ["Male", "Female", "Prefer not to say", "Other"] },
       {
         id: "entry.1665325264",
         type: "radio",
@@ -49,14 +49,14 @@ const SECTIONS: Section[] = [
         help: "Select one",
         allowOther: true,
         options: [
-          "School Student / Representative",
+          "School Student/Representative",
           "Young Adult Out For Fun",
           "Parent With Children At Home",
           "Working professional / decides team outings",
-          "Artsy / creative",
-          "College student",
+          "Artsy/ creative",
+          "College students",
           "Government / tourism / institution representative",
-          "Pet parent",
+          "Pet parents",
         ],
       },
       { id: "entry.40641649", type: "text", label: "Your occupation", placeholder: "e.g. designer, teacher, student…" },
@@ -67,7 +67,7 @@ const SECTIONS: Section[] = [
         help: "Optional",
         optional: true,
         allowOther: true,
-        options: ["Under ₹25,000", "₹25,000 – ₹50,000", "₹50,000 – ₹1 lakh", "₹1 lakh – ₹2 lakh"],
+        options: ["Under 25,000", "25,000 - 50,000", "50,000 - 1 lakh", "1 lakh - 2 lakh"],
       },
       {
         id: "entry.735323549",
@@ -92,11 +92,11 @@ const SECTIONS: Section[] = [
         help: "Select all that apply",
         allowOther: true,
         options: [
-          "Watching movies / OTT",
+          "Watching movies/OTT",
           "Hanging out with friends",
           "Shopping",
-          "Outdoor activities / sports",
-          "Social media / browsing",
+          "Outdoor activities/sports",
+          "Social media/browsing",
           "Reading",
           "Visiting entertainment venues (cinema, gaming zone, etc.)",
           "Travel",
@@ -123,7 +123,7 @@ const SECTIONS: Section[] = [
         id: "entry.18470500",
         type: "radio",
         label: "How often do you go out for paid entertainment or experiences?",
-        options: ["Weekly", "2 – 3 times a month", "Monthly", "A few times a year", "Rarely"],
+        options: ["Weekly", "2-3 times a month", "Monthly", "A few Times A Year", "Rarely"],
       },
       {
         id: "entry.1101617653",
@@ -145,7 +145,7 @@ const SECTIONS: Section[] = [
         id: "entry.926958870",
         type: "radio",
         label: "Typically, how much do you spend per person, per outing on entertainment — excluding food?",
-        options: ["Under ₹300", "₹300 – ₹600", "₹600 – ₹1,000", "₹1,000 – ₹1,500", "₹1,500 – ₹2,500", "₹2,500+"],
+        options: ["Under ₹300", "₹300–600", "₹600–1,000", "₹1,000–1,500", "₹1,500–2,500", "₹2,500+"],
       },
       {
         id: "entry.986532273",
@@ -153,13 +153,13 @@ const SECTIONS: Section[] = [
         label: "Who do you usually go with?",
         help: "Select all that apply",
         allowOther: true,
-        options: ["Alone", "Partner", "Family with kids", "Friends", "Colleagues / team", "Pets", "College", "School", "Family"],
+        options: ["Alone", "Partner", "Family with kids", "Friends", "Colleagues / team", "Pets", "Colleges", "School", "Family"],
       },
       {
         id: "entry.873875889",
         type: "radio",
         label: "How much do you usually spend on food & drinks during an outing, per person?",
-        options: ["Under ₹150", "₹150 – ₹250", "₹250 – ₹500", "₹500+"],
+        options: ["Under ₹150", "₹150–250", "₹250–500", "₹500+"],
       },
     ],
   },
@@ -172,7 +172,7 @@ const SECTIONS: Section[] = [
     showImagineImages: true,
     questions: [
       {
-        id: "entry.728203652",
+        id: "entry.788304985",
         type: "text",
         label: "Imagine you just walked out of this experience. What's the first thing you'd tell someone?",
         placeholder: "Short answer",
@@ -180,7 +180,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: "entry.696342517",
-        type: "radio",
+        type: "checkbox",
         label: "Who would you most likely come with?",
         options: ["Partner", "Family", "Friends", "Colleagues / team", "Student group", "Alone", "Pets", "Your kids"],
       },
@@ -203,7 +203,7 @@ const SECTIONS: Section[] = [
         id: "entry.288898767",
         type: "radio",
         label: "How often might you visit in a year?",
-        options: ["Once", "2 – 3 times", "4 – 6 times", "Monthly or more"],
+        options: ["Once", "2–3 times", "4–6 times", "Monthly or more"],
       },
       {
         id: "entry.1927809211",
@@ -218,7 +218,7 @@ const SECTIONS: Section[] = [
           "Social-media worthy",
           "A special occasion",
           "A visitor / tourist attraction",
-          "Pet friendly",
+          "Pet Friendly",
         ],
       },
     ],
@@ -233,32 +233,33 @@ const SECTIONS: Section[] = [
       {
         id: "entry.81434430",
         type: "radio",
-        label: "Immersive Room (60–90 minutes) — what feels like a fair price?",
-        options: ["Under ₹799", "₹800 – ₹999", "₹1,000 – ₹1,299", "₹1,300 – ₹1,499", "₹1,500 or above"],
+        label: "What feels like a fair price for an Immersive Room experience?",
+        options: ["Under ₹799", "₹800–999", "₹1,000–1,299", "₹1,300–1,499", "₹1,500 or above"],
       },
       {
         id: "entry.1639420917",
         type: "radio",
-        label: "Dome Experience — what feels like a fair price?",
-        options: ["Under ₹500", "₹500 – ₹799", "₹800 – ₹999", "₹1,000 or above"],
+        label: "What feels like a fair price for a Dome Experience?",
+        options: ["Under ₹500", "₹500–799", "₹800–999", "₹1,000 or above"],
       },
       {
         id: "entry.1948191618",
         type: "radio",
-        label: "AR / VR Game — what feels like a fair price for ONE game?",
-        options: ["Under ₹200", "₹200 – ₹399", "₹400 – ₹599", "₹600 – ₹799", "₹799+"],
+        label: "What feels like a fair price for ONE AR/VR game?",
+        options: ["Under ₹200", "₹200–399", "₹400–599", "₹600-799", "₹799+"],
       },
       {
         id: "entry.229220687",
         type: "radio",
-        label: "Immersive Room + Dome bundle — what feels like a fair price?",
-        options: ["Under ₹1,000", "₹1,000 – ₹1,299", "₹1,300 – ₹1,599", "₹1,600 – ₹1,899", "₹1,899+"],
+        label: "What feels like a fair price for an Immersive Room + Dome Experience bundle?",
+        options: ["Under ₹1000", "₹1,000–1,299", "₹1,300–1,599", "₹1,600–1,899", "₹1,899+"],
       },
       {
         id: "entry.1092784356",
         type: "radio",
-        label: "All-Access Bundle (Immersive Room + Dome + AR/VR) — what feels like a fair price?",
-        options: ["Under ₹1,500", "₹1,500 – ₹1,999", "₹2,000 – ₹2,499", "₹2,500 – ₹2,999", "₹3,000+"],
+        label: "What feels like a fair price for an All-Access Bundle?",
+        help: "Immersive Room + Dome + AR/VR",
+        options: ["Under ₹1,500", "₹1,500–1,999", "₹2,000–2,499", "₹2,500–2,999", "₹3,000+"],
       },
       {
         id: "entry.2039847036",
@@ -277,14 +278,14 @@ const SECTIONS: Section[] = [
           "Exclusive experiences or content",
           "Access to VIP or private areas",
           "Dedicated host or guide",
-          "Extended access / more time",
+          "Extended access / More time",
         ],
       },
       {
         id: "entry.1273275245",
         type: "radio",
         label: "What feels like a fair price for a Premium Experience?",
-        options: ["Under ₹2,000", "₹2,000 – ₹2,499", "₹2,500 – ₹2,999", "₹3,000 – ₹3,499", "₹3,500 – ₹3,999", "₹4,000 or above"],
+        options: ["Under ₹2,000", "₹2,000–2,499", "₹2,500–2,999", "₹3,000–3,499", "₹3,500–3,999", "₹4,000 or above"],
       },
       {
         id: "entry.1154363758",
@@ -296,7 +297,7 @@ const SECTIONS: Section[] = [
         id: "entry.1654400987",
         type: "radio",
         label: "Would a season pass or membership interest you?",
-        options: ["Yes", "Maybe", "No"],
+        options: ["Yes", "No"],
       },
       {
         id: "entry.332897866",
@@ -317,6 +318,13 @@ const SECTIONS: Section[] = [
         ],
       },
       {
+        id: "entry.728203652",
+        type: "text",
+        label: "If this popped up on your social media feed, what would make you stop scrolling?",
+        placeholder: "Short answer",
+        optional: true,
+      },
+      {
         id: "entry.115913297",
         type: "radio",
         label: "Whose recommendation would you trust most?",
@@ -333,8 +341,16 @@ const SECTIONS: Section[] = [
       {
         id: "entry.1210283293",
         type: "radio",
-        label: "Would you like to receive an invitation to the pre-launch / opening event?",
-        options: ["Yes", "No"],
+        label: "Would you like to receive an invitation/Information to the pre-launch/opening event?",
+        options: ["No", "Yes"],
+      },
+      {
+        id: "entry.1465259241",
+        type: "text",
+        label: "Anything else you'd like to share?",
+        help: "Optional",
+        placeholder: "Optional",
+        optional: true,
       },
       {
         id: "entry.1931159729",
@@ -560,7 +576,7 @@ function Hero({ onStart }: { onStart: () => void }) {
           <span className="relative z-10">entertainment</span>
           <span
             aria-hidden
-            className="absolute inset-x-0 bottom-1 h-3 sm:h-4 z-0 rounded-full"
+            className="absolute inset-x-0 bottom-1 h-3 sm:h-4 -z-0 rounded-full"
             style={{ background: "var(--primary)" }}
           />
         </span>{" "}
@@ -686,6 +702,7 @@ function SectionCard({
           </div>
         )}
 
+        
         {section.id === "pricing" && (
   <div className="grid gap-6 mb-8">
 
@@ -721,6 +738,8 @@ function SectionCard({
 
   </div>
 )}
+
+        
 
         <div className="mt-8 space-y-8">
           {section.questions.map((q) => (
@@ -945,7 +964,7 @@ function QuestionField({
 
         {q.type === "textarea" && (
           <textarea
-            className="input-juno min-h-30 resize-y"
+            className="input-juno min-h-[120px] resize-y"
             placeholder={q.placeholder}
             value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
@@ -982,7 +1001,7 @@ function RatingField({
               type="button"
               onClick={() => onChange(n)}
               data-selected={selected}
-              className="chip-option w-14! justify-center! py-3.5! font-display text-lg font-bold"
+              className="chip-option !w-14 !justify-center !py-3.5 font-display text-lg font-bold"
               aria-label={`Rating ${n}`}
             >
               {n}
