@@ -180,7 +180,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: "entry.696342517",
-        type: "radio",
+        type: "checkbox",
         label: "Who would you most likely come with?",
         options: ["Partner", "Family", "Friends", "Colleagues / team", "Student group", "Alone", "Pets", "Your kids"],
       },
