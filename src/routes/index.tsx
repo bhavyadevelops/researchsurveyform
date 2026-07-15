@@ -367,7 +367,7 @@ const SECTIONS: Section[] = [
 // ---------- Google Form submission ----------
 
 const GOOGLE_FORM_ACTION =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse";
+  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/FormResponse";
 const GOOGLE_FORM_IFRAME = "weekender-gform-sink";
 
 function appendField(form: HTMLFormElement, name: string, value: string) {
