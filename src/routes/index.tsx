@@ -367,39 +367,16 @@ const SECTIONS: Section[] = [
 // ---------- Google Form submission ----------
 
 const GOOGLE_FORM_ACTION =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/FormResponse";
-const GOOGLE_FORM_WINDOW = "weekender-gform-response";
+  "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/formResponse";
 
-function appendField(form: HTMLFormElement, name: string, value: string) {
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = name;
-  input.value = value;
-  form.appendChild(input);
-}
-
-function appendAnswer(form: HTMLFormElement, entryId: string, raw: string) {
-  if (raw.startsWith(OTHER_PREFIX)) {
-    appendField(form, entryId, "__other_option__");
-    appendField(form, `${entryId}.other_option_response`, raw.slice(OTHER_PREFIX.length));
-  } else if (raw === "__other__") {
-    appendField(form, entryId, "__other_option__");
-    appendField(form, `${entryId}.other_option_response`, "");
-  } else {
-    appendField(form, entryId, raw);
-  }
-}
+const OTHER_PREFIX = "Other: ";
 
 function submitToGoogleForm(answers: Record<string, string | string[] | number>) {
   if (typeof document === "undefined") return;
 
-  const form = document.createElement("form");
-  form.action = GOOGLE_FORM_ACTION;
-  form.method = "POST";
-  form.style.display = "none";
-
-  // Preserve section order so fields post in the same order as the questions.
+  const formData = new URLSearchParams();
   let fieldCount = 0;
+
   for (const section of SECTIONS) {
     for (const q of section.questions) {
       const v = answers[q.id];
@@ -408,11 +385,28 @@ function submitToGoogleForm(answers: Record<string, string | string[] | number>)
         if (v.length === 0) continue;
         for (const item of v) {
           if (item === "" || item === undefined) continue;
-          appendAnswer(form, q.id, String(item));
+          if (typeof item === "string" && item.startsWith(OTHER_PREFIX)) {
+            formData.append(q.id, "__other_option__");
+            formData.append(`${q.id}.other_option_response`, item.slice(OTHER_PREFIX.length));
+          } else if (item === "__other__") {
+            formData.append(q.id, "__other_option__");
+            formData.append(`${q.id}.other_option_response`, "");
+          } else {
+            formData.append(q.id, String(item));
+          }
           fieldCount++;
         }
       } else {
-        appendAnswer(form, q.id, String(v));
+        const raw = String(v);
+        if (raw.startsWith(OTHER_PREFIX)) {
+          formData.append(q.id, "__other_option__");
+          formData.append(`${q.id}.other_option_response`, raw.slice(OTHER_PREFIX.length));
+        } else if (raw === "__other__") {
+          formData.append(q.id, "__other_option__");
+          formData.append(`${q.id}.other_option_response`, "");
+        } else {
+          formData.append(q.id, raw);
+        }
         fieldCount++;
       }
     }
@@ -420,24 +414,19 @@ function submitToGoogleForm(answers: Record<string, string | string[] | number>)
 
   if (fieldCount === 0) return;
 
-  // Open Google Forms in a new tab/window. This is far more reliable than
-  // hidden-iframe submission, which modern browsers routinely block for
-  // cross-origin forms (Safari ITP, Chrome privacy sandbox, etc.).
-  // Fall back to _blank (new tab) if window.open is blocked by a popup blocker.
-  const gformWin = window.open("", GOOGLE_FORM_WINDOW, "width=600,height=700,scrollbars=yes");
-  form.target = gformWin && !gformWin.closed ? GOOGLE_FORM_WINDOW : "_blank";
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(() => form.remove(), 1000);
-
-  // If the popup/new-tab was blocked, the form submits in the current page and
-  // the user sees Google's confirmation. Set a flag so the Thank You page
-  // restores if they navigate back to the survey.
-  try {
-    localStorage.setItem("weekender-submitted", "true");
-  } catch {
-    // localStorage unavailable — no harm
-  }
+  // Send via fetch with no-cors mode. Browser privacy features (Safari ITP,
+  // Chrome privacy sandbox) block hidden-iframe cross-origin form submissions,
+  // and popup blockers can interfere with window.open(). The no-cors fetch
+  // avoids both problems entirely — the request is sent, the response is
+  // opaque (can't be read), but we don't need the response.
+  fetch(GOOGLE_FORM_ACTION, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData.toString(),
+  }).catch(() => {
+    // no-cors responses are opaque, so errors here are expected and harmless
+  });
 }
 
 // ---------- Page ----------
@@ -448,19 +437,6 @@ function SurveyPage() {
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
-
-  // Restore submitted state from localStorage — covers the case where the form
-  // submitted in the same page (popup blocked) and the user navigates back.
-  useEffect(() => {
-    try {
-      if (localStorage.getItem("weekender-submitted") === "true") {
-        setSubmitted(true);
-        localStorage.removeItem("weekender-submitted");
-      }
-    } catch {
-      // localStorage unavailable
-    }
-  }, []);
 
   const totalSections = SECTIONS.length;
   const progress = useMemo(() => {
@@ -800,8 +776,6 @@ function SectionCard({
 }
 
 // ---------- Fields ----------
-
-const OTHER_PREFIX = "Other: ";
 
 function splitOther(value: string | string[] | number | undefined, options: string[]): { selected: string | string[] | undefined; otherText: string; otherActive: boolean } {
   if (Array.isArray(value)) {
