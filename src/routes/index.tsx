@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import immersive from "@/assets/immersive.jpg";
 import dome from "@/assets/dome.jpg";
 import image from "@/assets/image.png";
@@ -297,7 +297,7 @@ const SECTIONS: Section[] = [
         id: "entry.1654400987",
         type: "radio",
         label: "Would a season pass or membership interest you?",
-        options: ["Yes", "No"],
+        options: ["Yes", "Maybe", "No"],
       },
       {
         id: "entry.332897866",
@@ -368,7 +368,7 @@ const SECTIONS: Section[] = [
 
 const GOOGLE_FORM_ACTION =
   "https://docs.google.com/forms/d/e/1FAIpQLSfUtOpgvlDQTq40OG4eVNGdVh5zqBvlA4V1IW09iLVmGQZABg/FormResponse";
-const GOOGLE_FORM_IFRAME = "weekender-gform-sink";
+const GOOGLE_FORM_WINDOW = "weekender-gform-response";
 
 function appendField(form: HTMLFormElement, name: string, value: string) {
   const input = document.createElement("input");
@@ -393,22 +393,13 @@ function appendAnswer(form: HTMLFormElement, entryId: string, raw: string) {
 function submitToGoogleForm(answers: Record<string, string | string[] | number>) {
   if (typeof document === "undefined") return;
 
-  let iframe = document.getElementById(GOOGLE_FORM_IFRAME) as HTMLIFrameElement | null;
-  if (!iframe) {
-    iframe = document.createElement("iframe");
-    iframe.name = GOOGLE_FORM_IFRAME;
-    iframe.id = GOOGLE_FORM_IFRAME;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-  }
-
   const form = document.createElement("form");
   form.action = GOOGLE_FORM_ACTION;
   form.method = "POST";
-  form.target = GOOGLE_FORM_IFRAME;
   form.style.display = "none";
 
   // Preserve section order so fields post in the same order as the questions.
+  let fieldCount = 0;
   for (const section of SECTIONS) {
     for (const q of section.questions) {
       const v = answers[q.id];
@@ -418,16 +409,35 @@ function submitToGoogleForm(answers: Record<string, string | string[] | number>)
         for (const item of v) {
           if (item === "" || item === undefined) continue;
           appendAnswer(form, q.id, String(item));
+          fieldCount++;
         }
       } else {
         appendAnswer(form, q.id, String(v));
+        fieldCount++;
       }
     }
   }
 
+  if (fieldCount === 0) return;
+
+  // Open Google Forms in a new tab/window. This is far more reliable than
+  // hidden-iframe submission, which modern browsers routinely block for
+  // cross-origin forms (Safari ITP, Chrome privacy sandbox, etc.).
+  // Fall back to _blank (new tab) if window.open is blocked by a popup blocker.
+  const gformWin = window.open("", GOOGLE_FORM_WINDOW, "width=600,height=700,scrollbars=yes");
+  form.target = gformWin && !gformWin.closed ? GOOGLE_FORM_WINDOW : "_blank";
   document.body.appendChild(form);
   form.submit();
   setTimeout(() => form.remove(), 1000);
+
+  // If the popup/new-tab was blocked, the form submits in the current page and
+  // the user sees Google's confirmation. Set a flag so the Thank You page
+  // restores if they navigate back to the survey.
+  try {
+    localStorage.setItem("weekender-submitted", "true");
+  } catch {
+    // localStorage unavailable — no harm
+  }
 }
 
 // ---------- Page ----------
@@ -438,6 +448,19 @@ function SurveyPage() {
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  // Restore submitted state from localStorage — covers the case where the form
+  // submitted in the same page (popup blocked) and the user navigates back.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("weekender-submitted") === "true") {
+        setSubmitted(true);
+        localStorage.removeItem("weekender-submitted");
+      }
+    } catch {
+      // localStorage unavailable
+    }
+  }, []);
 
   const totalSections = SECTIONS.length;
   const progress = useMemo(() => {
@@ -458,7 +481,7 @@ function SurveyPage() {
     });
   }
 
-  function validateSection(section: Section) {
+  function validateSection(section: Section): { valid: boolean; errors: Record<string, string> } {
     const next: Record<string, string> = {};
     for (const q of section.questions) {
       if (q.optional) continue;
@@ -468,12 +491,13 @@ function SurveyPage() {
       }
     }
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return { valid: Object.keys(next).length === 0, errors: next };
   }
 
   function goNext() {
-    if (!validateSection(currentSection)) {
-      const firstErr = Object.keys(errors)[0];
+    const { valid, errors: validationErrors } = validateSection(currentSection);
+    if (!valid) {
+      const firstErr = Object.keys(validationErrors)[0];
       if (firstErr) document.getElementById(`q-${firstErr}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -1039,7 +1063,9 @@ function ThankYou({ answers }: { answers: Record<string, string | string[] | num
           needle for how weekends get better.
         </p>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border-[1.5px] border-ink bg-cream px-4 py-2 font-mono text-xs">
-          {count} responses recorded · confidential
+          {count > 0
+            ? `${count} responses recorded · confidential`
+            : "Your response has been submitted successfully · confidential"}
         </div>
       </div>
     </section>
